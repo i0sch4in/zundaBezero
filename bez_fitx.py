@@ -3,8 +3,8 @@
 import socket, sys, os
 import szasar
 
-SERVER = 'localhost'
-PORT = 6012
+#SERVER = 'localhost'
+#PORT = 6012
 ER_MSG = (
 	"Dena ondo. Errorerik ez.",
 	"Komando ezezaguna edo ustegabekoa.",
@@ -70,7 +70,8 @@ if __name__ == "__main__":
 	if len( sys.argv ) == 3:
 		PORT = int( sys.argv[2])
 
-	s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+	print("Zerbitzaria:{}, Portua:{}", SERVER, PORT)
+	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 	s.connect( (SERVER, PORT) )
 
 	while True:
