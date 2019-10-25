@@ -46,13 +46,15 @@ def iserror(message):
 		elif code=="11":
 			msg="Eguzki-plakak zabaldu edo tolestu eragiketa egitea ezinezkoa da."
 		elif code=="12":
-			msg="Plakak zabaltzea eskatu da eta zabalduta daude jada"
+			msg="Plakak zabaltzea eskatu da eta zabalduta daude jada."
 		elif code=="21":
-			msg="Ezinezkoa da karga maila eskuratzea erantzuna negatiboa delako"
+			msg="Ezinezkoa da karga maila eskuratzea erantzuna negatiboa delako."
 		elif code=="31":
-			msg="Ezin zara propultsorearekin hasi, erantzuna negatiboa ematen du"
-		elif code=="41":
+			msg="Ezin zara propultsorearekin hasi, erantzuna negatiboa ematen du."
+		elif code=="32":
 			msg="Propultsorearekin hasi zara eta ezin zaio eutsi adierazitako iraupenean."
+		elif code=="41":
+			msg="Neurketak ezin izan dira eskuratu."
 		elif code:
 			#ez da definitutako errore-zenbaki bat
 			print("Errore ezezaguna.")
@@ -126,17 +128,34 @@ if __name__ == "__main__":
 					print("Eguzki-plakak zabaltzen...")
 				else:
 					print("Eguzki-plakak ixten...")
-			print("\r\n" + "="*40 + "\r\n")
+
 		# elif option == Menua.Batt:
 		#
 		#
 		# elif option == Menua.Prop:
 		#
-		#
-		# elif option == Menua.Dump:
-		#
-		#
-		# elif option == Menua.Exit:
-		# 	s.close()
-		# 	exit(0)
+
+		elif option == Menua.Dump:
+			message = key + szasar.Command.Dump
+			s.send(message.encode("ascii"))
+			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max
+			buf = s.recv(1002)
+			# datan neurketa-zati guztiak gorde (OK erantzuna ezik)
+			data = buf.decode()[2:]
+			if not iserror(buf.decode("ascii")):
+				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
+				# bufferraren tamaina 1000 byte baino gutxiago den arte
+				# edo 1000 byte eta hurrengoa hutsa
+				buf = s.recv(1000)
+				while(sys.getsizeof(buf) == 1000):
+					data += buf.decode("ascii")
+					buf = s.recv(1000)
+
+				# azken neurketa-zatia gehitu.
+				data += buf.decode("ascii")
+
+				print("Eskuratutako neurketak: \r\n" + data)
+
+		# marra bereilea inprimatu
+		print("\r\n" + "="*40 + "\r\n")
 	s.close()
