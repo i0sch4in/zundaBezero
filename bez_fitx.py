@@ -71,89 +71,49 @@ if __name__ == "__main__":
 
 	print(" Zerbitzaria: {}, Portua: {} ".format(SERVER, PORT))
 	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
-	s.connect( (SERVER, PORT) )
+	zerb_helb = (SERVER, PORT)
+	"""NO FUNCSIONA"""
+	# mezua="konexioa hasi"
+	# s.sendto(mezua.encode(), zerb_helb )
+	# saiakerak = 0
+	# """ Zerbitzariak ez badu bidalitako mezuarekin erantzuten (5 saiakeretan),
+	# 	komunikazioa etengo da.
+	# """
+	# buf, beste_helb = s.recvfrom(1024)
+	# while(buf.decode() != mezua and saiakerak<5):
+	# 	s.sendto(mezua.encode(), zerb_helb )
+	# 	buf, beste_helb = s.recvfrom(1024)
+	# 	saiakerak+=1
+	# if(saiakerak>=5):
+	# 	print("Ez da zerbitzaria lokalizatu")
+	# 	s.close()
+	# 	exit(1)
+	# s.connect(beste_helb)
+
+	s.sendto(b"", zerb_helb)
+	buf, beste_helb = s.recvfrom(1024)
+	s.connect(beste_helb)
 
 	while True:
 		option = Menua.menua()
-
+		key = input("Sartu segurtasun-kodea:")
 		if option == Menua.Fold:
-			message = "{}\r\n".format( szasar.Command.Fold )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode( "ascii" )
-			if iserror( message ):
-				continue
-			filecount = 0
-			print( "Zerbitzaritik jasotako fitxategi zerrenda" )
-			print( "-----------------------------------------" )
-			while True:
-				line = szasar.recvline( s ).decode("ascii")
-				if line:
-					filecount += 1
-					fileinfo = line.split( '?' )
-					print( "{:<20} {:>8}".format( fileinfo[0], int2bytes( int(fileinfo[1]) ) ) )
-				else:
-					break
-			print( "-------------------------------" )
-			if filecount == 0:
-				print( "Ez dago fitxategirik eskuragarri." )
-			else:
-				plurala = "{} fitxategi".format( filecount ) if filecount > 1 else "fitxategi bat"
-				print( "Guztira {} eskuragarri.".format( plurala ) )
-
-		elif option == Menua.Batt:
-			filename = input( "Idatzi jaitsi nahi duzun fitxategiaren izena: " )
-			message = "{}{}\r\n".format( szasar.Command. Batt, filename )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode ("ascii" )
-			if iserror( message ):
-				continue
-			filesize = int( message[2:] )
-			message = "{}\r\n".format( szasar.Command.Download2 )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode( "ascii" )
-			if iserror( message ):
-				continue
-			filedata = szasar.recvall( s, filesize )
-			try:
-				with open( filename, "wb" ) as f:
-					f.write( filedata )
-			except:
-				print( "Ezin da fitxategia disko lokalean gorde." )
-			else:
-				print( "'{}' fitxategia jaso da zuzenki.".format( filename ) )
-
-		elif option == Menua.Prop:
-			filename = input( "Idatzi igo nahi duzun fitxategiaren izena: " )
-			try:
-				filesize = os.path.getsize( filename )
-				with open( filename, "rb" ) as f:
-					filedata = f.read()
-			except:
-				print( "'{}' fitxategia ezin izan da atzitu.".format( filename ) )
-				continue
-
-			message = "{}{}?{}\r\n".format( szasar.Command.Prop, filename, filesize )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode( "ascii" )
-			if iserror( message ):
-				continue
-
-			message = "{}\r\n".format( szasar.Command.Upload2 )
-			s.sendall( message.encode( "ascii" ) )
-			s.sendall( filedata )
-			message = szasar.recvline( s ).decode( "ascii" )
-			if not iserror( message ):
-				print( "'{}' fitxategia bidali da zuzenki.".format( filename ) )
-
-		elif option == Menua.Dump:
-			filename = input( "Idatzi ezabatu nahi duzun fitxategiaren izena: " )
-			message = "{}{}\r\n".format( szasar.Command.Dump, filename )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode( "ascii" )
-			if not iserror( message ):
-				print( "'{}' fitxategia ezabatu da.".format( filename ) )
-
-		elif option == Menua.Exit:
-			s.close()
-			exit(0)
+			param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu]")
+			while(param not in ["0","1"]):
+				print("Balioa ez da zuzena. Saiatu berriro.")
+				param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu]")
+			message = key + szasar.Command.Fold + param
+			s.send(message.encode("ascii"))
+		# elif option == Menua.Batt:
+		#
+		#
+		# elif option == Menua.Prop:
+		#
+		#
+		# elif option == Menua.Dump:
+		#
+		#
+		# elif option == Menua.Exit:
+		# 	s.close()
+		# 	exit(0)
 	s.close()
