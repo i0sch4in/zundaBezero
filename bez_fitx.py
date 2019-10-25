@@ -5,29 +5,17 @@ import szasar
 
 #SERVER = 'localhost'
 #PORT = 6012
-ER_MSG = (
-	"Dena ondo. Errorerik ez.",
-	"Komando ezezaguna edo ustegabekoa.",
-	"Erabiltzaile ezezaguna.",
-	"Pasahitz okerra.",
-	"Arazoa fitxategi zerrenda sortzen.",
-	"Fitxategia ez da existizen.",
-	"Arazoa fitxategia jaistean.",
-	"Erabiltzaile anonimoak ez dauka honetarako baimenik.",
-	"Fitxategiaren tamaina haundiegia da.",
-	"Arazoa fitxategia igotzeko prestatzean.",
-	"Arazoa fitxategia igotzean.",
-	"Arazoa fitxategia ezabatzean." )
 
+#ez aldatu
 class Menua:
-	List, Download, Upload, Delete, Exit = range( 1, 6 )
-	Options = ( "Fitxategi zerrenda", "Fitxategia jaitsi", "Fitxategia igo", "Fitxategia ezabatu", "Saioa amaitu" )
+	Fold, Batt, Prop, Dump, Exit = range( 1, 6 )
+	Options = ( "Eguzki plakak zabaldu/tolestu", "Bateriaren karga maila", "Pultsatzaile bat martxan jarri", "Sentsoreen neurketak", "Amaiatu")
 
 	def menua():
-		print( "+{}+".format( '-' * 30 ) )
+		print( "+{}+".format( '-' * 38 ) )
 		for i,option in enumerate( Menua.Options, 1 ):
-			print( "| {}.- {:<25}|".format( i, option ) )
-		print( "+{}+".format( '-' * 30 ) )
+			print( "| {}.- {:<33}|".format( i, option ) )
+		print( "+{}+".format( '-' * 38 ) )
 
 		while True:
 			try:
@@ -40,29 +28,40 @@ class Menua:
 			else:
 				print( "Aukera okerra, saiatu berriro." )
 
-def iserror( message ):
+#aldatu (ibon)
+def iserror(message):
 	if( message.startswith( "ER" ) ):
-		code = int( message[2:] )
-		print( ER_MSG[code] )
-		return True
+		code = message[2:]
+		if(code=="01"):
+			msg="Komando ezezaguna."
+		elif(code=="02"):
+			msg="Espero ez zen parametroa. Parametro bat jaso da espero ez zen tokian."
+		elif(code=="03"):
+			msg="Hautazkoa ez den parametro bat falta da."
+		elif(code=="04"):
+			msg="Parametroak ez du formatu egokia."
+		elif(code=="05"):
+			msg="Segurtasun kode okerra."
+		elif(code=="11"):
+			msg="Eguzki-plakak zabaldu edo tolestu eragiketa egitea ezinezkoa da."
+		elif(code=="12"):
+			msg="Plakak zabaltzea eskatu da eta zabalduta daude jada"
+		elif(code=="21"):
+			msg="Ezinezkoa da karga maila eskuratzea erantzuna negatiboa delako"
+		elif(code=="31"):
+			msg="Ezin zara propultsorearekin hasi, erantzuna negatiboa ematen du"
+		elif(code=="41"):
+			msg="Propultsorearekin hasi zara eta ezin zaio eutsi adierazitako iraupenean."
 	else:
+		print("Errore ezezaguna.")
 		return False
-
-def int2bytes( n ):
-	if n < 1 << 10:
-		return str(n) + " B  "
-	elif n < 1 << 20:
-		return str(round( n / (1 << 10) ) ) + " KiB"
-	elif n < 1 << 30:
-		return str(round( n / (1 << 20) ) ) + " MiB"
-	else:
-		return str(round( n / (1 << 30) ) ) + " GiB"
-
+	print("Errorea: " + msg)
+	return True
 
 
 if __name__ == "__main__":
-	if len( sys.argv ) > 3:
-		print( "Erabilera: {} [<zerbitzaria> [<portua>]]".format( sys.argv[0] ) )
+	if len( sys.argv ) != 3:
+		print( "Erabilera: {} [<zerbitzaria> <portua>]".format( sys.argv[0] ) )
 		exit( 2 )
 
 	if len( sys.argv ) >= 2:
@@ -70,31 +69,15 @@ if __name__ == "__main__":
 	if len( sys.argv ) == 3:
 		PORT = int( sys.argv[2])
 
-	print("Zerbitzaria:{}, Portua:{}", SERVER, PORT)
+	print(" Zerbitzaria: {}, Portua: {} ".format(SERVER, PORT))
 	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 	s.connect( (SERVER, PORT) )
 
 	while True:
-		user = input( "Erabiltzaile izena: " )
-		message = "{}{}\r\n".format( szasar.Command.User, user )
-		s.sendall( message.encode( "ascii" ) )
-		message = szasar.recvline( s ).decode( "ascii" )
-		if iserror( message ):
-			continue
-
-		password = input( "Pasahitza: " )
-		message = "{}{}\r\n".format( szasar.Command.Password, password )
-		s.sendall( message.encode( "ascii" ) )
-		message = szasar.recvline( s ).decode( "ascii" )
-		if not iserror( message ):
-			break
-
-
-	while True:
 		option = Menua.menua()
 
-		if option == Menua.List:
-			message = "{}\r\n".format( szasar.Command.List )
+		if option == Menua.Fold:
+			message = "{}\r\n".format( szasar.Command.Fold )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode( "ascii" )
 			if iserror( message ):
@@ -117,9 +100,9 @@ if __name__ == "__main__":
 				plurala = "{} fitxategi".format( filecount ) if filecount > 1 else "fitxategi bat"
 				print( "Guztira {} eskuragarri.".format( plurala ) )
 
-		elif option == Menua.Download:
+		elif option == Menua.Batt:
 			filename = input( "Idatzi jaitsi nahi duzun fitxategiaren izena: " )
-			message = "{}{}\r\n".format( szasar.Command.Download, filename )
+			message = "{}{}\r\n".format( szasar.Command. Batt, filename )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode ("ascii" )
 			if iserror( message ):
@@ -139,7 +122,7 @@ if __name__ == "__main__":
 			else:
 				print( "'{}' fitxategia jaso da zuzenki.".format( filename ) )
 
-		elif option == Menua.Upload:
+		elif option == Menua.Prop:
 			filename = input( "Idatzi igo nahi duzun fitxategiaren izena: " )
 			try:
 				filesize = os.path.getsize( filename )
@@ -149,7 +132,7 @@ if __name__ == "__main__":
 				print( "'{}' fitxategia ezin izan da atzitu.".format( filename ) )
 				continue
 
-			message = "{}{}?{}\r\n".format( szasar.Command.Upload, filename, filesize )
+			message = "{}{}?{}\r\n".format( szasar.Command.Prop, filename, filesize )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode( "ascii" )
 			if iserror( message ):
@@ -162,17 +145,15 @@ if __name__ == "__main__":
 			if not iserror( message ):
 				print( "'{}' fitxategia bidali da zuzenki.".format( filename ) )
 
-		elif option == Menua.Delete:
+		elif option == Menua.Dump:
 			filename = input( "Idatzi ezabatu nahi duzun fitxategiaren izena: " )
-			message = "{}{}\r\n".format( szasar.Command.Delete, filename )
+			message = "{}{}\r\n".format( szasar.Command.Dump, filename )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode( "ascii" )
 			if not iserror( message ):
 				print( "'{}' fitxategia ezabatu da.".format( filename ) )
 
 		elif option == Menua.Exit:
-			message = "{}\r\n".format( szasar.Command.Exit )
-			s.sendall( message.encode( "ascii" ) )
-			message = szasar.recvline( s ).decode( "ascii" )
-			break
+			s.close()
+			exit(0)
 	s.close()

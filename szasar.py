@@ -1,5 +1,5 @@
 class Command:
-	User, Password, List, Download, Download2, Upload, Upload2, Delete, Exit = ("USER", "PASS", "LIST", "DOWN", "DOW2", "UPLO", "UPL2", "DELE", "EXIT")
+	Fold, Batt, Prop, Dump = ("FOLD", "BATT", "PROP", "DUMP")
 
 def recvline( s, removeEOL = True ):
 	line = b''
