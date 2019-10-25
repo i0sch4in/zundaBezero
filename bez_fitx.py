@@ -30,34 +30,41 @@ class Menua:
 
 #aldatu (ibon)
 def iserror(message):
+	#errorea da
 	if( message.startswith( "ER" ) ):
-		code = message[2:]
-		if(code=="01"):
+		code = message[2:4]
+		if code=="01":
 			msg="Komando ezezaguna."
-		elif(code=="02"):
+		elif code=="02":
 			msg="Espero ez zen parametroa. Parametro bat jaso da espero ez zen tokian."
-		elif(code=="03"):
+		elif code=="03":
 			msg="Hautazkoa ez den parametro bat falta da."
-		elif(code=="04"):
+		elif code=="04":
 			msg="Parametroak ez du formatu egokia."
-		elif(code=="05"):
+		elif code=="05":
 			msg="Segurtasun kode okerra."
-		elif(code=="11"):
+		elif code=="11":
 			msg="Eguzki-plakak zabaldu edo tolestu eragiketa egitea ezinezkoa da."
-		elif(code=="12"):
+		elif code=="12":
 			msg="Plakak zabaltzea eskatu da eta zabalduta daude jada"
-		elif(code=="21"):
+		elif code=="21":
 			msg="Ezinezkoa da karga maila eskuratzea erantzuna negatiboa delako"
-		elif(code=="31"):
+		elif code=="31":
 			msg="Ezin zara propultsorearekin hasi, erantzuna negatiboa ematen du"
-		elif(code=="41"):
+		elif code=="41":
 			msg="Propultsorearekin hasi zara eta ezin zaio eutsi adierazitako iraupenean."
-	else:
-		print("Errore ezezaguna.")
+		elif code:
+			#ez da definitutako errore-zenbaki bat
+			print("Errore ezezaguna.")
+			return True
+		#errore-zenbaki ezaguna da. errorea inprimatu
+		print("Errorea: " + msg)
+		return True
+	#ez da errorea eta OK da
+	elif(message.startswith("OK")):
 		return False
-	print("Errorea: " + msg)
+	#ez da ez ER ez OK
 	return True
-
 
 if __name__ == "__main__":
 	if len( sys.argv ) != 3:
@@ -96,14 +103,30 @@ if __name__ == "__main__":
 
 	while True:
 		option = Menua.menua()
-		key = input("Sartu segurtasun-kodea:")
+		if(option == Menua.Exit):
+			s.close()
+			exit(0)
+		key = input("Sartu segurtasun-kodea: ")
+		saiakerak=0
+		#Kodea ondo sartzeko saiakera kopurua: 3
+		while(len(key)!=5 and saiakerak<3):
+			print("Kodeak 5eko luzeera izan behar du. Saiatu berriro.")
+			key = input("Sartu segurtasun-kodea: ")
+			saiakerak+=1
 		if option == Menua.Fold:
-			param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu]")
+			param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu] ")
 			while(param not in ["0","1"]):
 				print("Balioa ez da zuzena. Saiatu berriro.")
-				param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu]")
+				param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu] ")
 			message = key + szasar.Command.Fold + param
 			s.send(message.encode("ascii"))
+			buf=s.recv(1024)
+			if not iserror(buf.decode("ascii")):
+				if(param=="0"):
+					print("Eguzki-plakak zabaltzen...")
+				else:
+					print("Eguzki-plakak ixten...")
+			print("\r\n" + "="*40 + "\r\n")
 		# elif option == Menua.Batt:
 		#
 		#
