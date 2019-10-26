@@ -105,6 +105,7 @@ if __name__ == "__main__":
 
 	while True:
 		option = Menua.menua()
+
 		if(option == Menua.Exit):
 			s.close()
 			exit(0)
@@ -115,6 +116,8 @@ if __name__ == "__main__":
 			print("Kodeak 5eko luzeera izan behar du. Saiatu berriro.")
 			key = input("Sartu segurtasun-kodea: ")
 			saiakerak+=1
+
+
 		if option == Menua.Fold:
 			param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu] ")
 			while(param not in ["0","1"]):
@@ -129,11 +132,48 @@ if __name__ == "__main__":
 				else:
 					print("Eguzki-plakak ixten...")
 
-		# elif option == Menua.Batt:
-		#
-		#
-		# elif option == Menua.Prop:
-		#
+		elif option == Menua.Batt:
+			message = key + szasar.Command.Batt
+			s.send(message.encode("ascii"))
+			buf=s.recv(1024)
+			bufDecoded = buf.decode("ascii")
+			if not iserror(bufDecoded):
+				message = bufDecoded[2:5]
+				print("Bateriaren karga honakoa da: %" + message[0:2] +"," + message[2])
+
+
+		elif option == Menua.Prop:
+	            saiakerak1=0
+	            saiakerak=0
+	            aurkituaid=False
+	            aurkituadenb=False
+	            paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia)"))
+	            while ( (paramId < 0 or paramId > 9) and saiakerak<2 ):
+	                print("Balioa ez da zuzena. Saiatu berriro.")
+	                paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia)"))
+	                saiakerak+=1
+	                if saiakerak==2:
+	                        aurkituaid=True
+	            if aurkituaid:
+	                continue
+	            paramIraupen= int(input("eta propultsioaren iraupena milisegundutan (3 digitu) "))
+	            while ( len(str(paramIraupen)) != 3 and saiakerak1<2 ):
+	                print("Balioa ez da zuzena. Saiatu berriro.")
+	                paramIraupen= int(input("Orain adierazi propultsioaren iraupena milisegundutan (3 digitu) "))
+	                saiakerak1+=1
+	                if saiakerak1==2:
+	                    aurkituadenb=True
+
+	            if aurkituadenb:
+	                continue
+
+	            message = key + szasar.Command.Prop +str(paramId) + str(paramIraupen)
+	            s.send(message.encode("ascii"))
+	            buf=s.recv(1024)
+
+	            if not iserror(buf.decode("ascii")):
+	                    print("Propultsorea ondo aktibatu da")
+
 
 		elif option == Menua.Dump:
 			message = key + szasar.Command.Dump
@@ -156,6 +196,6 @@ if __name__ == "__main__":
 
 				print("Eskuratutako neurketak: \r\n" + data)
 
-		# marra bereilea inprimatu
+		# marra bereizlea inprimatucan size of byte be 0
 		print("\r\n" + "="*40 + "\r\n")
 	s.close()
