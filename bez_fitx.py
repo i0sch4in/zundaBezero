@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import socket, sys, os
-import szasar
+import szasar	
 
 #SERVER = 'localhost'
 #PORT = 6012
