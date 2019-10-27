@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 
 import socket, sys, os
-import szasar	
+import szasar
 
-#SERVER = 'localhost'
-#PORT = 6012
+SERVER = 'localhost'
+PORT = 6012
 
 #ez aldatu
 class Menua:
 	Fold, Batt, Prop, Dump, Exit = range( 1, 6 )
-	Options = ( "Eguzki plakak zabaldu/tolestu", "Bateriaren karga maila", "Pultsatzaile bat martxan jarri", "Sentsoreen neurketak", "Amaiatu")
+	Options = ( "Eguzki plakak zabaldu/tolestu", "Bateriaren karga maila ikusi", "Pultsatzaile bat martxan jarri", "Sentsoreen neurketak ikusi", "Amaiatu")
 
 	def menua():
 		print( "+{}+".format( '-' * 38 ) )
@@ -69,36 +69,9 @@ def iserror(message):
 	return True
 
 if __name__ == "__main__":
-	if len( sys.argv ) != 3:
-		print( "Erabilera: {} [<zerbitzaria> <portua>]".format( sys.argv[0] ) )
-		exit( 2 )
 
-	if len( sys.argv ) >= 2:
-		SERVER = sys.argv[1]
-	if len( sys.argv ) == 3:
-		PORT = int( sys.argv[2])
-
-	print(" Zerbitzaria: {}, Portua: {} ".format(SERVER, PORT))
 	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 	zerb_helb = (SERVER, PORT)
-	"""NO FUNCSIONA"""
-	# mezua="konexioa hasi"
-	# s.sendto(mezua.encode(), zerb_helb )
-	# saiakerak = 0
-	# """ Zerbitzariak ez badu bidalitako mezuarekin erantzuten (5 saiakeretan),
-	# 	komunikazioa etengo da.
-	# """
-	# buf, beste_helb = s.recvfrom(1024)
-	# while(buf.decode() != mezua and saiakerak<5):
-	# 	s.sendto(mezua.encode(), zerb_helb )
-	# 	buf, beste_helb = s.recvfrom(1024)
-	# 	saiakerak+=1
-	# if(saiakerak>=5):
-	# 	print("Ez da zerbitzaria lokalizatu")
-	# 	s.close()
-	# 	exit(1)
-	# s.connect(beste_helb)
-
 	s.sendto(b"", zerb_helb)
 	buf, beste_helb = s.recvfrom(1024)
 	s.connect(beste_helb)
@@ -107,6 +80,8 @@ if __name__ == "__main__":
 		option = Menua.menua()
 
 		if(option == Menua.Exit):
+			print("Agur!")
+			s.send(b"")
 			s.close()
 			exit(0)
 		key = input("Sartu segurtasun-kodea: ")
@@ -119,6 +94,7 @@ if __name__ == "__main__":
 
 
 		if option == Menua.Fold:
+			print("Zure aukera: Eguzki plakak zabaldu/tolestu\r\n")
 			param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu] ")
 			while(param not in ["0","1"]):
 				print("Balioa ez da zuzena. Saiatu berriro.")
@@ -133,6 +109,7 @@ if __name__ == "__main__":
 					print("Eguzki-plakak ixten...")
 
 		elif option == Menua.Batt:
+			print("Zure aukera: Bateriaren karga maila ikusi\r\n")
 			message = key + szasar.Command.Batt
 			s.send(message.encode("ascii"))
 			buf=s.recv(1024)
@@ -147,10 +124,11 @@ if __name__ == "__main__":
 	            saiakerak=0
 	            aurkituaid=False
 	            aurkituadenb=False
-	            paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia)"))
+	            print("Zure aukera: Pultsatzaile bat martxan jarri\r\n")
+	            paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia) "))
 	            while ( (paramId < 0 or paramId > 9) and saiakerak<2 ):
 	                print("Balioa ez da zuzena. Saiatu berriro.")
-	                paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia)"))
+	                paramId = int(input("Adierazi propultsatzailearen identifikatzailea (0-tik 9-rainoko zenbakia) "))
 	                saiakerak+=1
 	                if saiakerak==2:
 	                        aurkituaid=True
@@ -172,10 +150,11 @@ if __name__ == "__main__":
 	            buf=s.recv(1024)
 
 	            if not iserror(buf.decode("ascii")):
-	                    print("Propultsorea ondo aktibatu da")
+	                    print("Propultsorea ondo aktibatu da.")
 
 
 		elif option == Menua.Dump:
+			print("Zure aukera: Sentsoreen neurketak ikusi\r\n")
 			message = key + szasar.Command.Dump
 			s.send(message.encode("ascii"))
 			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max
@@ -186,16 +165,18 @@ if __name__ == "__main__":
 				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
 				# bufferraren tamaina 1000 byte baino gutxiago den arte
 				# edo 1000 byte eta hurrengoa hutsa
-				buf = s.recv(1000)
-				while(sys.getsizeof(buf) == 1000):
-					data += buf.decode("ascii")
+				if(sys.getsizeof(buf) == 1002): #mezua osorik beteta zegoen
 					buf = s.recv(1000)
+					while(sys.getsizeof(buf) == 1000):
+						data += buf.decode("ascii")
+						buf = s.recv(1000)
 
-				# azken neurketa-zatia gehitu.
-				data += buf.decode("ascii")
-
+					# azken neurketa-zatia gehitu.
+					data += buf.decode("ascii")
 				print("Eskuratutako neurketak: \r\n" + data)
 
 		# marra bereizlea inprimatucan size of byte be 0
 		print("\r\n" + "="*40 + "\r\n")
+
+	s.send(b"")
 	s.close()
