@@ -165,15 +165,13 @@ if __name__ == "__main__":
 				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
 				# bufferraren tamaina 1000 byte baino gutxiago den arte
 				# edo 1000 byte eta hurrengoa hutsa
-				print("Lehen mezua irakurri da. " + str(len(buf.decode("ascii"))))
 				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agarik
-					jasota,_,_ = select.select([s],[],[],2.5)
+					jasota,_,_ = select.select([s],[],[],10)
 					if not jasota:
 						print("Eskuratutako neurketak: \r\n" + data)
 						continue
 					buf = s.recv(1001)
 					while(len(buf.decode("ascii")) == 1000+1):
-						print("sartu naiz")
 						data += buf.decode("ascii")
 						buf = s.recv(1001)
 
