@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import socket, sys, os
+import socket, sys, os, select
 import szasar
 
 SERVER = 'localhost'
@@ -167,6 +167,10 @@ if __name__ == "__main__":
 				# edo 1000 byte eta hurrengoa hutsa
 				print("Lehen mezua irakurri da. " + str(len(buf.decode("ascii"))))
 				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agarik
+					jasota,_,_ = select.select([s],[],[],2.5)
+					if not jasota:
+						print("Eskuratutako neurketak: \r\n" + data)
+						continue
 					buf = s.recv(1001)
 					while(len(buf.decode("ascii")) == 1000+1):
 						print("sartu naiz")
