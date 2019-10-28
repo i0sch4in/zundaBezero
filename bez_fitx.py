@@ -112,7 +112,7 @@ if __name__ == "__main__":
 			print("Zure aukera: Bateriaren karga maila ikusi\r\n")
 			message = key + szasar.Command.Batt
 			s.send(message.encode("ascii"))
-			buf=s.recv(1024)
+			buf=s.recv(2+3) # ER + kodea(2) edo OK + portzentaia (3)
 			bufDecoded = buf.decode("ascii")
 			if not iserror(bufDecoded):
 				message = bufDecoded[2:5]
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
 	            message = key + szasar.Command.Prop +str(paramId) + str(paramIraupen)
 	            s.send(message.encode("ascii"))
-	            buf=s.recv(1024)
+	            buf=s.recv(2+2) # OK edo ER + kodea(2)
 
 	            if not iserror(buf.decode("ascii")):
 	                    print("Propultsorea ondo aktibatu da.")
@@ -158,24 +158,25 @@ if __name__ == "__main__":
 			message = key + szasar.Command.Dump
 			s.send(message.encode("ascii"))
 			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max
-			buf = s.recv(1002)
+			buf = s.recv(1002+1)
 			# datan neurketa-zati guztiak gorde (OK erantzuna ezik)
 			data = buf.decode()[2:]
 			if not iserror(buf.decode("ascii")):
 				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
 				# bufferraren tamaina 1000 byte baino gutxiago den arte
 				# edo 1000 byte eta hurrengoa hutsa
-				if(sys.getsizeof(buf) == 1002): #mezua osorik beteta zegoen
-					buf = s.recv(1000)
-					while(sys.getsizeof(buf) == 1000):
+				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agarik
+					buf = s.recv(1000+1)
+					while(len(buf.decode("ascii")) == 1000+1):
 						data += buf.decode("ascii")
-						buf = s.recv(1000)
+						buf = s.recv(1000+1)
 
 					# azken neurketa-zatia gehitu.
-					data += buf.decode("ascii")
+					if buf != b"":
+						data += buf.decode("ascii")
 				print("Eskuratutako neurketak: \r\n" + data)
 
-		# marra bereizlea inprimatucan size of byte be 0
+		# marra bereizlea inprimatu
 		print("\r\n" + "="*40 + "\r\n")
 
 	s.send(b"")
