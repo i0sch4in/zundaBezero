@@ -158,18 +158,20 @@ if __name__ == "__main__":
 			message = key + szasar.Command.Dump
 			s.send(message.encode("ascii"))
 			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max
-			buf = s.recv(1002+1)
+			buf = s.recv(1003)
 			# datan neurketa-zati guztiak gorde (OK erantzuna ezik)
 			data = buf.decode()[2:]
 			if not iserror(buf.decode("ascii")):
 				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
 				# bufferraren tamaina 1000 byte baino gutxiago den arte
 				# edo 1000 byte eta hurrengoa hutsa
+				print("Lehen mezua irakurri da. " + str(len(buf.decode("ascii"))))
 				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agarik
-					buf = s.recv(1000+1)
+					buf = s.recv(1001)
 					while(len(buf.decode("ascii")) == 1000+1):
+						print("sartu naiz")
 						data += buf.decode("ascii")
-						buf = s.recv(1000+1)
+						buf = s.recv(1001)
 
 					# azken neurketa-zatia gehitu.
 					if buf != b"":
