@@ -73,7 +73,7 @@ if __name__ == "__main__":
 	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 	zerb_helb = (SERVER, PORT)
 	s.sendto(b"", zerb_helb)
-	buf, beste_helb = s.recvfrom(1024)
+	buf, beste_helb = s.recvfrom(1) #mezua ez da garrantzitsua, soliko portu berria jakin nahi da
 	s.connect(beste_helb)
 
 	while True:
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 				param = input("Plakak zabaldu edo tolestu nahi dituzu? [0=zabaldu, 1=tolestu] ")
 			message = key + szasar.Command.Fold + param
 			s.send(message.encode("ascii"))
-			buf=s.recv(1024)
+			buf=s.recv(2+2) ## ER + kodea(2) edo OK
 			if not iserror(buf.decode("ascii")):
 				if(param=="0"):
 					print("Eguzki-plakak zabaltzen...")
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 			print("Zure aukera: Sentsoreen neurketak ikusi\r\n")
 			message = key + szasar.Command.Dump
 			s.send(message.encode("ascii"))
-			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max
+			# Lehen irakurketa: ER / OK + 1000 byte (edo gutxiago) = 1002 byte max + RETURN(1)
 			buf = s.recv(1003)
 			# datan neurketa-zati guztiak gorde (OK erantzuna ezik)
 			data = buf.decode()[2:]
@@ -165,7 +165,7 @@ if __name__ == "__main__":
 				# neurketa-zatiak irakurri, (ER/OK mezurik gabe)
 				# bufferraren tamaina 1000 byte baino gutxiago den arte
 				# edo 1000 byte eta hurrengoa hutsa
-				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agarik
+				if(len(buf.decode("ascii")) == 1002+1): #mezua osorik beteta zegoen, 1 gehitu RETURN-agatik
 					jasota,_,_ = select.select([s],[],[],10)
 					if not jasota:
 						print("Eskuratutako neurketak: \r\n" + data)
